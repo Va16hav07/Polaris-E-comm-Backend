@@ -27,8 +27,33 @@ app.use((req,res)=>{
 </html>`)
  })
 
-app.listen(8080,(err)=>{
-    if(err)
-        console.log("err",err);
-    console.log("server listening on 8080")
+// Get port from environment variable, fallback to 8080 if not provided
+const PORT = process.env.PORT || 8080;
+
+// Create server with error handling
+const server = app.listen(PORT, (err) => {
+    if(err) {
+        console.error("Error starting server:", err);
+        process.exit(1); // Exit with error code
+    }
+    console.log(`Server listening on port ${PORT}`);
+});
+
+// Handle server errors
+server.on('error', (error) => {
+    if (error.code === 'EADDRINUSE') {
+        console.error(`Port ${PORT} is already in use. Please try using a different port.`);
+        console.error(`You can set a different port using the PORT environment variable.`);
+    } else {
+        console.error('Server error:', error);
+    }
+    process.exit(1);
+});
+
+// Handle process termination
+process.on('SIGTERM', () => {
+    console.log('SIGTERM received, shutting down gracefully');
+    server.close(() => {
+        console.log('Server closed');
+    });
 });
